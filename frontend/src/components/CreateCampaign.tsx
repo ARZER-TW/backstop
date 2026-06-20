@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { COIN_SYMBOL } from '../config';
 import { createCampaignTx, toBaseUnits } from '../lib/backstop';
 import { useTx } from '../lib/useTx';
+import { useI18n } from '../lib/i18n';
 import { ErrorBlock } from './CampaignDetail';
 
 const DAY_PRESETS = [7, 14, 30];
@@ -16,6 +17,7 @@ function isPos(s: string): boolean {
 
 export function CreateCampaign() {
   const { run, pending, error } = useTx();
+  const { t } = useI18n();
   const [target, setTarget] = useState('1000');
   const [bonus, setBonus] = useState('150');
   const [days, setDays] = useState(14);
@@ -44,13 +46,13 @@ export function CreateCampaign() {
   const targetOk = isPos(target);
   const bonusOk = isPos(bonus);
   const reason: string | null = !targetOk
-    ? 'Set a funding target above 0.'
+    ? t('Set a funding target above 0.')
     : !bonusOk
-      ? 'Lock a bonus above 0 — it’s what makes pledging the rational move.'
+      ? t('Lock a bonus above 0 — it’s what makes pledging the rational move.')
       : !deadline.valid
         ? demo
-          ? 'Enter a duration in minutes above 0.'
-          : 'Pick a deadline in the future.'
+          ? t('Enter a duration in minutes above 0.')
+          : t('Pick a deadline in the future.')
         : null;
 
   async function submit(e: React.FormEvent) {
@@ -78,14 +80,13 @@ export function CreateCampaign() {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12.5l4.2 4.2L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Campaign launched
+            {t('Campaign launched')}
           </div>
-          <h3>Your bonus is locked in escrow</h3>
+          <h3>{t('Your bonus is locked in escrow')}</h3>
           <p className="helper">
-            Backers can now pledge until <b>{deadline.label}</b>. Share the campaign so being early pays off — if it misses{' '}
-            {target} {COIN_SYMBOL}, your {bonus} {COIN_SYMBOL} bonus is split among them.
+            {t('Backers can now pledge until ')}<b>{deadline.label}</b>{t('. Share the campaign so being early pays off — if it misses {target}, your {bonus} bonus is split among them.', { target: `${target} ${COIN_SYMBOL}`, bonus: `${bonus} ${COIN_SYMBOL}` })}
           </p>
-          <a className="btn btn--primary btn--block btn--lg" href="#/">Browse campaigns</a>
+          <a className="btn btn--primary btn--block btn--lg" href="#/">{t('Browse campaigns')}</a>
         </div>
       </div>
     );
@@ -93,18 +94,17 @@ export function CreateCampaign() {
 
   return (
     <div className="detail">
-      <a className="back" href="#/">&larr; All campaigns</a>
+      <a className="back" href="#/">&larr; {t('All campaigns')}</a>
 
       <form className="card card--primary" onSubmit={submit}>
-        <h3>Launch a campaign</h3>
+        <h3>{t('Launch a campaign')}</h3>
         <p className="card-intro">
-          Lock a refund bonus up front. If the campaign misses its target, backers split that bonus — which is what makes
-          pledging early the rational move, not a leap of faith.
+          {t('Lock a refund bonus up front. If the campaign misses its target, backers split that bonus — which is what makes pledging early the rational move, not a leap of faith.')}
         </p>
 
         <label className="field">
           <div className="field-label">
-            <span className="lbl">Funding target</span>
+            <span className="lbl">{t('Funding target')}</span>
           </div>
           <div className="input-wrap">
             <input
@@ -115,13 +115,13 @@ export function CreateCampaign() {
             />
             <span className="input-suffix">{COIN_SYMBOL}</span>
           </div>
-          <div className="field-hint">The amount backers must collectively reach by the deadline.</div>
+          <div className="field-hint">{t('The amount backers must collectively reach by the deadline.')}</div>
         </label>
 
         <label className="field">
           <div className="field-label">
-            <span className="lbl">Refund bonus</span>
-            <span className="aux">leaves your wallet now</span>
+            <span className="lbl">{t('Refund bonus')}</span>
+            <span className="aux">{t('leaves your wallet now')}</span>
           </div>
           <div className="input-wrap">
             <input
@@ -132,13 +132,13 @@ export function CreateCampaign() {
             />
             <span className="input-suffix">{COIN_SYMBOL}</span>
           </div>
-          <div className="field-hint">Escrowed at launch. Paid to backers only if the campaign fails; returned to you if it succeeds.</div>
+          <div className="field-hint">{t('Escrowed at launch. Paid to backers only if the campaign fails; returned to you if it succeeds.')}</div>
         </label>
 
         <div className="field">
           <div className="field-label">
-            <span className="lbl">Deadline</span>
-            {deadline.valid && <span className="aux">Ends {deadline.label}</span>}
+            <span className="lbl">{t('Deadline')}</span>
+            {deadline.valid && <span className="aux">{t('Ends {date}', { date: deadline.label })}</span>}
           </div>
           {!demo && (
             <>
@@ -153,7 +153,7 @@ export function CreateCampaign() {
                       setCustomDate('');
                     }}
                   >
-                    {d} days
+                    {t('{d} days', { d })}
                   </button>
                 ))}
               </div>
@@ -166,7 +166,7 @@ export function CreateCampaign() {
                   onChange={(e) => setCustomDate(e.target.value)}
                 />
               </div>
-              {customDate && !deadline.valid && <div className="field-error">Pick a date in the future.</div>}
+              {customDate && !deadline.valid && <div className="field-error">{t('Pick a date in the future.')}</div>}
             </>
           )}
           {demo && (
@@ -177,35 +177,34 @@ export function CreateCampaign() {
                 onChange={(e) => setMinutes(e.target.value)}
                 inputMode="numeric"
               />
-              <span className="input-suffix">min</span>
+              <span className="input-suffix">{t('min')}</span>
             </div>
           )}
           <label className="check">
             <input type="checkbox" checked={demo} onChange={(e) => setDemo(e.target.checked)} />
-            Use a short demo timer (minutes) instead of a date
+            {t('Use a short demo timer (minutes) instead of a date')}
           </label>
         </div>
 
         <div className="terms">
-          <h4>Terms preview</h4>
+          <h4>{t('Terms preview')}</h4>
           <p>
-            <span className="neg">&minus;{bonusOk ? bonus : '0'} {COIN_SYMBOL}</span> plus gas leaves your wallet now and is
-            locked in escrow as the bonus.
+            <span className="neg">&minus;{bonusOk ? bonus : '0'} {COIN_SYMBOL}</span>{' '}
+            {t('plus gas leaves your wallet now and is locked in escrow as the bonus.')}
           </p>
           <p>
-            Backers have until <b>{deadline.valid ? deadline.label : '—'}</b> to reach <b>{targetOk ? target : '—'} {COIN_SYMBOL}</b>.
+            {t('Backers have until ')}<b>{deadline.valid ? deadline.label : '—'}</b>{t(' to reach ')}<b>{targetOk ? target : '—'} {COIN_SYMBOL}</b>{t('.')}
           </p>
           <p>
-            If they <b>miss</b> it, your {bonusOk ? bonus : '0'} {COIN_SYMBOL} is split among backers pro-rata — your downside is
-            their reward for going first.
+            {t('If they ')}<b>{t('miss')}</b>{t(' it, your {bonus} is split among backers pro-rata — your downside is their reward for going first.', { bonus: `${bonusOk ? bonus : '0'} ${COIN_SYMBOL}` })}
           </p>
           <p>
-            If they <b>hit</b> it, you receive the raised {targetOk ? target : '—'} {COIN_SYMBOL} and your bonus returns to you.
+            {t('If they ')}<b>{t('hit')}</b>{t(' it, you receive the raised {target} and your bonus returns to you.', { target: `${targetOk ? target : '—'} ${COIN_SYMBOL}` })}
           </p>
         </div>
 
         <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={pending || !!reason}>
-          {pending ? 'Locking bonus…' : 'Launch & lock bonus'}
+          {pending ? t('Locking bonus…') : t('Launch & lock bonus')}
         </button>
         {!pending && reason && <p className="submit-reason">{reason}</p>}
         {error && <ErrorBlock raw={error} />}

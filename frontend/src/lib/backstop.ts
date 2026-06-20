@@ -2,6 +2,7 @@ import { SuiJsonRpcClient, getJsonRpcFullnodeUrl } from '@mysten/sui/jsonRpc';
 import { Transaction } from '@mysten/sui/transactions';
 import { SUI_CLOCK_OBJECT_ID } from '@mysten/sui/utils';
 import { COIN_DECIMALS, COIN_SYMBOL, COIN_TYPE, NETWORK, PACKAGE_ID } from '../config';
+import type { TFunc } from './i18n';
 
 const MODULE = 'campaign';
 
@@ -205,8 +206,8 @@ export function toBaseUnits(human: string): bigint {
   return BigInt(whole || '0') * 10n ** BigInt(COIN_DECIMALS) + BigInt(fracPadded || '0');
 }
 
-export function statusLabel(status: number): string {
-  return status === STATUS.SUCCEEDED ? 'Succeeded' : status === STATUS.FAILED ? 'Failed' : 'Funding';
+export function statusLabel(status: number, t: TFunc): string {
+  return status === STATUS.SUCCEEDED ? t('Succeeded') : status === STATUS.FAILED ? t('Failed') : t('Funding');
 }
 
 /** Pro-rata bonus a backer would receive if the campaign fails, per the Move formula. */

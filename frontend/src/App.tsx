@@ -23,6 +23,7 @@ import { COIN_SYMBOL } from './config';
 import { CreateCampaign } from './components/CreateCampaign';
 import { CampaignList, identity, midId } from './components/CampaignList';
 import { CampaignDetail } from './components/CampaignDetail';
+import { I18nProvider, useI18n } from './lib/i18n';
 
 const queryClient = new QueryClient();
 const { networkConfig } = createNetworkConfig({
@@ -74,39 +75,38 @@ function Mark() {
 }
 
 function Home({ connected }: { connected: boolean }) {
+  const { t } = useI18n();
   return (
     <>
       <section className="hero">
         <h1>
-          Back a campaign. If it <span className="em">fails</span>, you come out ahead.
+          {t('Back a campaign. If it ')}<span className="em">{t('fails')}</span>{t(', you come out ahead.')}
         </h1>
         <p className="hero-lede">
-          Backstop is a dominant assurance contract on Sui. A creator locks a refund bonus before anyone pledges; miss the
-          target and every backer reclaims their pledge <em>plus</em> a share of that bonus. A platform can only promise
-          that — an on-chain escrow proves it.
+          {t('Backstop is a dominant assurance contract on Sui. A creator locks a refund bonus before anyone pledges; miss the target and every backer reclaims their pledge ')}<em>{t('plus')}</em>{t(' a share of that bonus. A platform can only promise that — an on-chain escrow proves it.')}
         </p>
         <div className="cta-row">
-          <a className="btn btn--primary btn--lg" href="#campaigns">Browse campaigns</a>
-          <a className="btn btn--secondary btn--lg" href="#/launch">Launch a campaign</a>
+          <a className="btn btn--primary btn--lg" href="#campaigns">{t('Browse campaigns')}</a>
+          <a className="btn btn--secondary btn--lg" href="#/launch">{t('Launch a campaign')}</a>
         </div>
-        {!connected && <p className="hero-note">Browse freely — a wallet is only needed to pledge or launch.</p>}
+        {!connected && <p className="hero-note">{t('Browse freely — a wallet is only needed to pledge or launch.')}</p>}
       </section>
 
       <div className="how">
         <div className="how-step">
           <span className="how-num">1</span>
-          <h4>The creator locks a bonus</h4>
-          <p>Before any pledge, the creator escrows a refund bonus they forfeit to backers if the target is missed.</p>
+          <h4>{t('The creator locks a bonus')}</h4>
+          <p>{t('Before any pledge, the creator escrows a refund bonus they forfeit to backers if the target is missed.')}</p>
         </div>
         <div className="how-step">
           <span className="how-num">2</span>
-          <h4>Backers pledge into escrow</h4>
-          <p>Funds sit in the contract, not the creator’s wallet. Backer count and momentum stay visible to everyone.</p>
+          <h4>{t('Backers pledge into escrow')}</h4>
+          <p>{t('Funds sit in the contract, not the creator’s wallet. Backer count and momentum stay visible to everyone.')}</p>
         </div>
         <div className="how-step">
           <span className="how-num">3</span>
-          <h4>The deadline settles it</h4>
-          <p>Hit the target and the creator is funded. Miss it and every backer reclaims their pledge plus a bonus share.</p>
+          <h4>{t('The deadline settles it')}</h4>
+          <p>{t('Hit the target and the creator is funded. Miss it and every backer reclaims their pledge plus a bonus share.')}</p>
         </div>
       </div>
 
@@ -118,16 +118,41 @@ function Home({ connected }: { connected: boolean }) {
 }
 
 function LaunchGate() {
+  const { t } = useI18n();
   return (
     <div className="detail">
-      <a className="back" href="#/">&larr; All campaigns</a>
+      <a className="back" href="#/">&larr; {t('All campaigns')}</a>
       <div className="card card--primary">
-        <h3>Launch a campaign</h3>
-        <p className="helper">Connect a wallet to lock a bonus and open your campaign for pledges.</p>
+        <h3>{t('Launch a campaign')}</h3>
+        <p className="helper">{t('Connect a wallet to lock a bonus and open your campaign for pledges.')}</p>
         <div className="gate">
-          <div className="connect-cta"><ConnectButton /></div>
+          <div className="connect-cta"><ConnectButton connectText={t('Connect Wallet')} /></div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function LangToggle() {
+  const { lang, setLang } = useI18n();
+  return (
+    <div className="lang-toggle" role="group" aria-label="Language">
+      <button
+        type="button"
+        className={`lang-opt${lang === 'en' ? ' active' : ''}`}
+        aria-pressed={lang === 'en'}
+        onClick={() => setLang('en')}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        className={`lang-opt${lang === 'zh' ? ' active' : ''}`}
+        aria-pressed={lang === 'zh'}
+        onClick={() => setLang('zh')}
+      >
+        中
+      </button>
     </div>
   );
 }
@@ -144,6 +169,7 @@ function pfState(c: CampaignView | undefined, p: PledgeView): { label: string; t
 
 function Portfolio() {
   const account = useCurrentAccount();
+  const { t } = useI18n();
   const campaignsQ = useQuery({ queryKey: ['campaigns'], queryFn: () => getCampaigns() });
   const pledgesQ = useQuery({
     queryKey: ['pledges', 'all', account?.address],
@@ -155,9 +181,9 @@ function Portfolio() {
     return (
       <section className="detail">
         <div className="card card--primary">
-          <h3>Your portfolio</h3>
-          <p className="helper">Connect a wallet to see the campaigns you’ve backed and any funds you can claim.</p>
-          <div className="gate"><div className="connect-cta"><ConnectButton /></div></div>
+          <h3>{t('Your portfolio')}</h3>
+          <p className="helper">{t('Connect a wallet to see the campaigns you’ve backed and any funds you can claim.')}</p>
+          <div className="gate"><div className="connect-cta"><ConnectButton connectText={t('Connect Wallet')} /></div></div>
         </div>
       </section>
     );
@@ -174,23 +200,27 @@ function Portfolio() {
     <section className="detail">
       <div className="section-head">
         <div>
-          <h2>Your portfolio</h2>
-          <p className="section-sub">Pledges you hold and funds you can claim back.</p>
+          <h2>{t('Your portfolio')}</h2>
+          <p className="section-sub">{t('Pledges you hold and funds you can claim back.')}</p>
         </div>
       </div>
 
       <div className="card" style={{ marginBottom: 'var(--sp-5)' }}>
         <div className="pf-summary">
           <div className={`pf-claim${claimable === 0n ? ' none' : ''}`}>
-            <div className="cap">Claimable now</div>
+            <div className="cap">{t('Claimable now')}</div>
             <span className="money">
               <span className="fig">{formatNum(claimable)}</span>
               <span className="unit">{COIN_SYMBOL}</span>
             </span>
           </div>
           <div className="muted small" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {pledges.length} {pledges.length === 1 ? 'pledge' : 'pledges'} across {campaignCount}{' '}
-            {campaignCount === 1 ? 'campaign' : 'campaigns'}
+            {t('{count} {pledgeWord} across {campaignCount} {campaignWord}', {
+              count: pledges.length,
+              pledgeWord: t(pledges.length === 1 ? 'pledge' : 'pledges'),
+              campaignCount,
+              campaignWord: t(campaignCount === 1 ? 'campaign' : 'campaigns'),
+            })}
           </div>
         </div>
       </div>
@@ -208,9 +238,9 @@ function Portfolio() {
         </div>
       ) : rows.length === 0 ? (
         <div className="empty">
-          <div className="empty-title">No pledges yet</div>
-          <p className="empty-body">Back a campaign and it shows up here. If one you backed misses its target, your claimable refund and bonus appear at the top.</p>
-          <a className="btn btn--secondary" href="#/">Browse campaigns</a>
+          <div className="empty-title">{t('No pledges yet')}</div>
+          <p className="empty-body">{t('Back a campaign and it shows up here. If one you backed misses its target, your claimable refund and bonus appear at the top.')}</p>
+          <a className="btn btn--secondary" href="#/">{t('Browse campaigns')}</a>
         </div>
       ) : (
         <div className="pf-list">
@@ -218,7 +248,7 @@ function Portfolio() {
             <a key={p.id} className="pf-item" href={`#/campaign/${p.campaign}`}>
               <div className="pf-item-main">
                 <div className="ttl">{identity(p.campaign).title}</div>
-                <div className="sub">Pledged {formatNum(p.amount)} {COIN_SYMBOL} · {midId(p.campaign)}</div>
+                <div className="sub">{t('Pledged {amount} · {id}', { amount: `${formatNum(p.amount)} ${COIN_SYMBOL}`, id: midId(p.campaign) })}</div>
               </div>
               <div className="pf-item-right">
                 <span className={`money${s.gain ? ' gain' : ''}`}>
@@ -226,11 +256,11 @@ function Portfolio() {
                   <span className="unit">{COIN_SYMBOL}</span>
                 </span>
                 {s.tone === 'neutral' ? (
-                  <span className="ret muted">{s.label}</span>
+                  <span className="ret muted">{t(s.label)}</span>
                 ) : (
                   <span className={`badge badge--${s.tone}`}>
                     <span className="dot" aria-hidden="true" />
-                    {s.label}
+                    {t(s.label)}
                   </span>
                 )}
               </div>
@@ -245,6 +275,7 @@ function Portfolio() {
 function Inner() {
   const account = useCurrentAccount();
   const route = useRoute();
+  const { t } = useI18n();
 
   return (
     <div className="app">
@@ -254,21 +285,22 @@ function Inner() {
           <span className="brand-name">Backstop</span>
         </div>
         <nav className="nav">
-          <a className={`nav-link${route.name === 'home' ? ' active' : ''}`} href="#/">Browse</a>
-          <a className={`nav-link is-secondary${route.name === 'launch' ? ' active' : ''}`} href="#/launch">Launch</a>
+          <a className={`nav-link${route.name === 'home' ? ' active' : ''}`} href="#/">{t('Browse')}</a>
+          <a className={`nav-link is-secondary${route.name === 'launch' ? ' active' : ''}`} href="#/launch">{t('Launch')}</a>
           {account && (
-            <a className={`nav-link${route.name === 'portfolio' ? ' active' : ''}`} href="#/portfolio">Portfolio</a>
+            <a className={`nav-link${route.name === 'portfolio' ? ' active' : ''}`} href="#/portfolio">{t('Portfolio')}</a>
           )}
         </nav>
         <span className="spacer" />
+        <LangToggle />
         <div className="connect-slot">
-          <ConnectButton />
+          <ConnectButton connectText={t('Connect Wallet')} />
         </div>
       </header>
 
       {!IS_DEPLOYED && (
         <div className="banner">
-          No package id configured. Set <code>VITE_PACKAGE_ID</code> in <code>frontend/.env</code> and restart the dev server.
+          {t('No package id configured. Set ')}<code>VITE_PACKAGE_ID</code>{t(' in ')}<code>frontend/.env</code>{t(' and restart the dev server.')}
         </div>
       )}
 
@@ -285,9 +317,9 @@ function Inner() {
       </main>
 
       <footer className="foot">
-        <span>Backstop — dominant assurance crowdfunding, settled on-chain.</span>
+        <span>{t('Backstop — dominant assurance crowdfunding, settled on-chain.')}</span>
         <span className="row" style={{ gap: 'var(--sp-3)' }}>
-          <a href={objUrl(PACKAGE_ID)} target="_blank" rel="noreferrer">Contract</a>
+          <a href={objUrl(PACKAGE_ID)} target="_blank" rel="noreferrer">{t('Contract')}</a>
           <span className="net-pill"><span className="dot" />{NETWORK}</span>
         </span>
       </footer>
@@ -300,7 +332,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
         <WalletProvider autoConnect>
-          <Inner />
+          <I18nProvider>
+            <Inner />
+          </I18nProvider>
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>

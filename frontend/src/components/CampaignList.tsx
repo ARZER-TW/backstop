@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { COIN_SYMBOL } from '../config';
 import { CampaignView, formatNum, getCampaigns, statusLabel, STATUS } from '../lib/backstop';
 import { formatCountdown, useNow } from '../lib/useNow';
+import { useI18n } from '../lib/i18n';
 
 /* ---------------------------------------------------------------------------
    Off-chain human identity, derived deterministically from the on-chain object
@@ -49,15 +50,17 @@ export function fillClass(status: number): string {
 }
 
 export function StatusBadge({ status }: { status: number }) {
+  const { t } = useI18n();
   return (
     <span className={`badge badge--${statusClass(status)}`}>
       <span className="dot" aria-hidden="true" />
-      {statusLabel(status)}
+      {statusLabel(status, t)}
     </span>
   );
 }
 
 function CampaignCard({ c, now }: { c: CampaignView; now: number }) {
+  const { t } = useI18n();
   const { title } = identity(c.id);
   const pct = c.target === 0n ? 0 : Math.min(100, Number((c.totalPledged * 100n) / c.target));
   const funding = c.status === STATUS.FUNDING;
@@ -73,7 +76,7 @@ function CampaignCard({ c, now }: { c: CampaignView; now: number }) {
         <StatusBadge status={c.status} />
       </div>
 
-      <p className="ccard-sum">{formatNum(c.bonusTotal)} {COIN_SYMBOL} refund bonus locked in escrow.</p>
+      <p className="ccard-sum">{t('{amount} refund bonus locked in escrow.', { amount: `${formatNum(c.bonusTotal)} ${COIN_SYMBOL}` })}</p>
 
       <div className="ccard-body">
         <div className="raise-line">
@@ -82,12 +85,12 @@ function CampaignCard({ c, now }: { c: CampaignView; now: number }) {
             <span className="unit">{COIN_SYMBOL}</span>
           </span>
           {funding && ret !== null && (
-            <span className="ret" title="Implied return if the campaign fails — a current estimate that dilutes as more is pledged">
+            <span className="ret" title={t('Implied return if the campaign fails — a current estimate that dilutes as more is pledged')}>
               +{ret.toFixed(1)}
               <span className="pct-unit">%</span>
             </span>
           )}
-          {funding && ret === null && <span className="ret muted">First backer</span>}
+          {funding && ret === null && <span className="ret muted">{t('First backer')}</span>}
         </div>
 
         <div className="progress">
@@ -96,12 +99,12 @@ function CampaignCard({ c, now }: { c: CampaignView; now: number }) {
 
         <div className="ccard-foot">
           <span className="foot-meta">
-            <span>{pct}% of {formatNum(c.target)}</span>
+            <span>{t('{pct}% of {target}', { pct, target: formatNum(c.target) })}</span>
             <span className="sep" aria-hidden="true" />
-            <span>{c.backerCount.toString()} {c.backerCount === 1n ? 'backer' : 'backers'}</span>
+            <span>{t('{count} {backerWord}', { count: c.backerCount.toString(), backerWord: t(c.backerCount === 1n ? 'backer' : 'backers') })}</span>
           </span>
           {funding ? (
-            <span className="countdown">{formatCountdown(Number(c.deadlineMs), now)}</span>
+            <span className="countdown">{formatCountdown(Number(c.deadlineMs), now, t)}</span>
           ) : (
             <span className="hash">{midId(c.id)}</span>
           )}
@@ -113,14 +116,15 @@ function CampaignCard({ c, now }: { c: CampaignView; now: number }) {
 
 export function CampaignList() {
   const now = useNow();
+  const { t } = useI18n();
   const { data, isLoading, error } = useQuery({ queryKey: ['campaigns'], queryFn: () => getCampaigns() });
 
   return (
     <section>
       <div className="section-head">
         <div>
-          <h2>Campaigns</h2>
-          <p className="section-sub">Back one before its deadline. If it misses, you reclaim your pledge plus a cut of the bonus.</p>
+          <h2>{t('Campaigns')}</h2>
+          <p className="section-sub">{t('Back one before its deadline. If it misses, you reclaim your pledge plus a cut of the bonus.')}</p>
         </div>
         {data && <span className="count">{data.length}</span>}
       </div>
@@ -149,12 +153,11 @@ export function CampaignList() {
               <path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
             </svg>
           </div>
-          <div className="empty-title">No campaigns yet</div>
+          <div className="empty-title">{t('No campaigns yet')}</div>
           <p className="empty-body">
-            Every campaign locks a refund bonus before the first pledge. Hit the target and the creator gets funded; miss it
-            and backers split the bonus &mdash; so being early is rewarded either way.
+            {t('Every campaign locks a refund bonus before the first pledge. Hit the target and the creator gets funded; miss it and backers split the bonus — so being early is rewarded either way.')}
           </p>
-          <a className="btn btn--secondary" href="#/launch">Launch the first campaign</a>
+          <a className="btn btn--secondary" href="#/launch">{t('Launch the first campaign')}</a>
         </div>
       ) : (
         <div className="grid">

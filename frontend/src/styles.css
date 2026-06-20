@@ -138,7 +138,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, -apple-system,
+    'Segoe UI', sans-serif;
   font-size: var(--t-body);
   line-height: 1.55;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
@@ -288,6 +289,50 @@ input {
   .nav-link.is-secondary {
     display: none;
   }
+}
+
+/* Language toggle — quiet segmented control, two options (EN / 中). */
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.lang-opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--t-sm);
+  font-weight: 510;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--d-micro) var(--ease), background var(--d-micro) var(--ease),
+    border-color var(--d-micro) var(--ease);
+}
+.lang-opt:hover {
+  color: var(--ink);
+}
+.lang-opt.active {
+  color: var(--ink);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+.lang-opt:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
 }
 
 .foot {
@@ -1634,6 +1679,11 @@ input[type='date'].input {
 .connect-slot button:hover {
   background: var(--surface-3) !important;
   border-color: var(--border-keyline) !important;
+}
+/* When connected, dapp-kit renders the address inside a span with its own
+   (low-contrast) color; force every descendant to the readable ink. */
+.connect-slot button * {
+  color: var(--ink) !important;
 }
 .connect-cta button {
   background: var(--accent) !important;
