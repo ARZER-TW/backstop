@@ -96,7 +96,7 @@
   --d-micro: 130ms;
   --d-enter: 200ms;
 
-  --maxw: 1120px;
+  --maxw: 1280px;
   --maxw-flow: 720px; /* centered transactional column */
 
   /* ---- dapp-kit ConnectButton + wallet modal theming ---- */
@@ -791,6 +791,32 @@ input {
 .detail {
   max-width: var(--maxw-flow);
   margin: 0 auto;
+}
+/* Campaign detail fills the width as two columns: transactional flow + a
+   trust/verification sidebar. Collapses to one column on narrow viewports. */
+.detail--wide {
+  max-width: 1180px;
+}
+.detail--wide .detail-head {
+  max-width: var(--maxw-flow);
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--sp-5);
+  align-items: start;
+}
+.detail-main,
+.detail-aside {
+  min-width: 0;
+}
+@media (max-width: 940px) {
+  .detail--wide {
+    max-width: var(--maxw-flow);
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .detail-head {
   margin-bottom: var(--sp-5);

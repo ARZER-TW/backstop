@@ -7,7 +7,7 @@ import { ErrorBlock } from './CampaignDetail';
 const DAY_PRESETS = [7, 14, 30];
 
 function fmtDate(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 function isPos(s: string): boolean {
   const n = Number(s);

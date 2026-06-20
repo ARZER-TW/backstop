@@ -228,7 +228,7 @@ export function CampaignDetail({ id }: { id: string }) {
   };
 
   return (
-    <div className="detail enter">
+    <div className="detail detail--wide enter">
       <a className="back" href="#/">&larr; All campaigns</a>
 
       <header className="detail-head">
@@ -248,6 +248,8 @@ export function CampaignDetail({ id }: { id: string }) {
         </p>
       </header>
 
+      <div className="detail-grid">
+        <div className="detail-main">
       {/* Overview — flat metadata panel */}
       <div className="card">
         <div className="raise-block">
@@ -505,6 +507,8 @@ export function CampaignDetail({ id }: { id: string }) {
         </div>
       )}
 
+        </div>
+        <aside className="detail-aside">
       {/* Trust / escrow legibility — the thesis made verifiable */}
       <div className="card trust">
         <div className="trust-title"><IconShield /> How your money is protected</div>
@@ -560,6 +564,8 @@ export function CampaignDetail({ id }: { id: string }) {
             </span>
           </div>
         </div>
+      </div>
+        </aside>
       </div>
     </div>
   );
