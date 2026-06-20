@@ -4,6 +4,8 @@
 
 Backstop is a [Dominant Assurance Contract](https://en.wikipedia.org/wiki/Assurance_contract#Dominant_assurance_contracts) (DAC) on Sui. Submission for **Sui Overflow 2026 · DeFi & Payments**.
 
+**[Live demo →](https://arzer-tw.github.io/backstop/)** · runs against the testnet deployment below (connect a Sui wallet on testnet).
+
 ## The idea
 
 Traditional all-or-nothing crowdfunding dies on the first-mover problem: no rational person wants to be early on a campaign that might not reach its goal. A DAC fixes this. The creator locks a **refund bonus** up front, and:
