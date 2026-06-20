@@ -1,4 +1,4 @@
-import { useCurrentAccount } from '@mysten/dapp-kit';
+import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { COIN_SYMBOL } from '../config';
@@ -7,6 +7,7 @@ import {
   creatorReclaimTx,
   creatorWithdrawTx,
   formatAmount,
+  formatNum,
   getCampaign,
   getOwnedPledges,
   pledgeTx,
@@ -18,6 +19,13 @@ import {
 } from '../lib/backstop';
 import { formatCountdown, useNow } from '../lib/useNow';
 import { useTx } from '../lib/useTx';
+
+function statusClass(status: number): string {
+  return status === STATUS.SUCCEEDED ? 'ok' : status === STATUS.FAILED ? 'fail' : 'live';
+}
+function fillClass(status: number): string {
+  return status === STATUS.SUCCEEDED ? 'done' : status === STATUS.FAILED ? 'dead' : '';
+}
 
 export function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
   const account = useCurrentAccount();
@@ -33,7 +41,8 @@ export function CampaignDetail({ id, onBack }: { id: string; onBack: () => void 
   });
 
   if (campaignQ.isLoading) return <p className="muted">Loading…</p>;
-  if (campaignQ.error || !campaignQ.data) return <p className="error">{(campaignQ.error as Error)?.message ?? 'Not found'}</p>;
+  if (campaignQ.error || !campaignQ.data)
+    return <p className="error">{(campaignQ.error as Error)?.message ?? 'Not found'}</p>;
 
   const c = campaignQ.data;
   const isCreator = account?.address === c.creator;
@@ -57,21 +66,19 @@ export function CampaignDetail({ id, onBack }: { id: string; onBack: () => void 
       </button>
 
       <div className="card">
-        <div className="row between">
+        <div className="row-top">
           <h2 className="mono">{shortId(c.id)}</h2>
-          <span className={`badge ${c.status === STATUS.SUCCEEDED ? 'ok' : c.status === STATUS.FAILED ? 'fail' : 'live'}`}>
-            {statusLabel(c.status)}
-          </span>
+          <span className={`badge ${statusClass(c.status)}`}>{statusLabel(c.status)}</span>
         </div>
 
         <div className="progress big">
-          <div className="progress-fill" style={{ width: `${pct}%` }} />
+          <div className={`progress-fill ${fillClass(c.status)}`} style={{ width: `${pct}%` }} />
         </div>
-        <div className="row between">
-          <strong>
-            {formatAmount(c.totalPledged)} <span className="muted">raised of {formatAmount(c.target)}</span>
-          </strong>
-          <span className="bonus-chip">+{formatAmount(c.bonusTotal)} bonus locked</span>
+        <div className="progress-meta">
+          <span className="raised">
+            {formatNum(c.totalPledged)} <span className="muted">/ {formatNum(c.target)} {COIN_SYMBOL} raised</span>
+          </span>
+          <span className="bonus">+{formatAmount(c.bonusTotal)} bonus</span>
         </div>
 
         <dl className="facts">
@@ -81,70 +88,93 @@ export function CampaignDetail({ id, onBack }: { id: string; onBack: () => void 
           </div>
           <div>
             <dt>{c.status === STATUS.FUNDING ? 'Deadline' : 'Outcome'}</dt>
-            <dd>{c.status === STATUS.FUNDING ? formatCountdown(Number(c.deadlineMs), now) : statusLabel(c.status)}</dd>
+            <dd>
+              {c.status === STATUS.FUNDING ? formatCountdown(Number(c.deadlineMs), now) : statusLabel(c.status)}
+            </dd>
           </div>
           <div>
             <dt>Creator</dt>
-            <dd className="mono">{shortId(c.creator)}{isCreator ? ' (you)' : ''}</dd>
+            <dd className="mono">
+              {shortId(c.creator)}
+              {isCreator ? ' · you' : ''}
+            </dd>
           </div>
         </dl>
       </div>
 
-      {/* Pledge while funding and before the deadline */}
+      {/* Pledge — funding, before deadline */}
       {c.status === STATUS.FUNDING && !deadlinePassed && (
         <div className="card">
           <h3>Back this campaign</h3>
-          <label>
-            Amount ({COIN_SYMBOL})
+          <label className="field">
+            <span>Amount ({COIN_SYMBOL})</span>
             <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
           </label>
-          <p className="muted small">
-            If it <strong>fails</strong>, you get your {formatAmount(amt)} back{' '}
-            <strong>plus ~{formatAmount(projected)} bonus</strong>. Backing a failed campaign pays you.
+          <p className="payoff">
+            If it fails, you reclaim your {formatAmount(amt)} <strong>plus ~{formatAmount(projected)} bonus</strong>.
+            Backing a failed campaign pays you.
           </p>
-          <button disabled={pending || amt === 0n} onClick={() => run(pledgeTx({ campaignId: c.id, amount: amt }))}>
-            {pending ? 'Pledging…' : `Pledge ${formatAmount(amt)}`}
-          </button>
+          {account ? (
+            <button disabled={pending || amt === 0n} onClick={() => run(pledgeTx({ campaignId: c.id, amount: amt }))}>
+              {pending ? 'Pledging…' : `Pledge ${formatAmount(amt)}`}
+            </button>
+          ) : (
+            <div className="connect-cta">
+              <ConnectButton />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Anyone may settle once the deadline passes */}
+      {/* Resolve — deadline reached, permissionless */}
       {c.status === STATUS.FUNDING && deadlinePassed && (
         <div className="card">
           <h3>Deadline reached</h3>
-          <p className="muted small">Settlement is permissionless &mdash; anyone can trigger it.</p>
-          <button disabled={pending} onClick={() => run(resolveTx(c.id))}>
-            {pending ? 'Resolving…' : 'Resolve campaign'}
-          </button>
+          <p className="helper">Settlement is permissionless — anyone can trigger it.</p>
+          {account ? (
+            <button disabled={pending} onClick={() => run(resolveTx(c.id))}>
+              {pending ? 'Resolving…' : 'Resolve campaign'}
+            </button>
+          ) : (
+            <div className="connect-cta">
+              <ConnectButton />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Creator withdraws on success */}
+      {/* Creator withdraw — success */}
       {c.status === STATUS.SUCCEEDED && isCreator && (
         <div className="card">
           <h3>Campaign succeeded</h3>
-          <p className="muted small">Withdraw all pledges plus your returned bonus.</p>
+          <p className="helper">Withdraw all pledges plus your returned bonus.</p>
           <button disabled={pending || c.pledged === 0n} onClick={() => run(creatorWithdrawTx(c.id))}>
             {c.pledged === 0n ? 'Already withdrawn' : pending ? 'Withdrawing…' : `Withdraw ${formatAmount(c.pledged + c.bonus)}`}
           </button>
         </div>
       )}
 
-      {/* Backers claim refund + bonus on failure */}
+      {/* Backer claim — failure */}
       {c.status === STATUS.FAILED && (
         <div className="card">
-          <h3>Campaign failed &mdash; claim your refund + bonus</h3>
-          {!account && <p className="muted">Connect a wallet to claim.</p>}
-          {account && pledges.length === 0 && <p className="muted small">You have no pledge receipts for this campaign.</p>}
+          <h3>Campaign failed — claim your refund + bonus</h3>
+          {!account && <p className="helper">Connect a wallet to claim.</p>}
+          {account && pledges.length === 0 && (
+            <p className="helper">You have no pledge receipts for this campaign.</p>
+          )}
           {pledges.map((p) => (
-            <div key={p.id} className="row between pledge-row">
-              <span>
+            <div key={p.id} className="pledge-row">
+              <span className="small">
                 Pledged {formatAmount(p.amount)} <span className="muted mono">{shortId(p.id)}</span>
               </span>
               {p.claimed ? (
                 <span className="badge ok">Claimed</span>
               ) : (
-                <button disabled={pending} onClick={() => run(claimRefundTx({ campaignId: c.id, pledgeId: p.id }))}>
+                <button
+                  className="btn-row"
+                  disabled={pending}
+                  onClick={() => run(claimRefundTx({ campaignId: c.id, pledgeId: p.id }))}
+                >
                   {pending ? 'Claiming…' : 'Claim'}
                 </button>
               )}

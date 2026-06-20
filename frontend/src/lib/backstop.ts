@@ -182,14 +182,21 @@ export async function getOwnedPledges(owner: string, campaignId?: string): Promi
 
 // === Formatting / domain helpers ===
 
-export function formatAmount(raw: bigint): string {
+/** Numeric amount without the coin symbol, grouped (e.g. "1,250.5"). */
+export function formatNum(raw: bigint): string {
   const base = 10n ** BigInt(COIN_DECIMALS);
-  const whole = raw / base;
+  const whole = (raw / base).toLocaleString('en-US');
   const frac = raw % base;
-  if (frac === 0n) return `${whole} ${COIN_SYMBOL}`;
+  if (frac === 0n) return whole;
   const fracStr = frac.toString().padStart(COIN_DECIMALS, '0').replace(/0+$/, '').slice(0, 4);
-  return `${whole}.${fracStr} ${COIN_SYMBOL}`;
+  return `${whole}.${fracStr}`;
 }
+
+export function formatAmount(raw: bigint): string {
+  return `${formatNum(raw)} ${COIN_SYMBOL}`;
+}
+
+export { COIN_SYMBOL };
 
 /** Parse a human amount (e.g. "1.5") into base units, given COIN_DECIMALS. */
 export function toBaseUnits(human: string): bigint {

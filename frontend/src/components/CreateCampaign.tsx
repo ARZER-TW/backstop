@@ -22,25 +22,27 @@ export function CreateCampaign() {
   }
 
   return (
-    <form className="card create-card" onSubmit={submit}>
-      <h2>Launch a campaign</h2>
-      <p className="muted">
-        You lock a refund <strong>bonus</strong> up front. If the campaign fails, backers split it &mdash; so
-        supporting you becomes the rational choice.
+    <form className="card" onSubmit={submit}>
+      <h3>Launch a campaign</h3>
+      <p className="card-intro">
+        Lock a refund bonus up front. If the campaign fails, backers split it &mdash; which makes pledging the rational
+        move.
       </p>
 
-      <label>
-        Funding target ({COIN_SYMBOL})
+      <label className="field">
+        <span>Funding target ({COIN_SYMBOL})</span>
         <input value={target} onChange={(e) => setTarget(e.target.value)} inputMode="decimal" />
       </label>
 
-      <label>
-        Refund bonus ({COIN_SYMBOL}) <span className="muted">&mdash; locked now, paid to backers only on failure</span>
+      <label className="field">
+        <span>
+          Refund bonus ({COIN_SYMBOL}) <span className="hint">— locked now, paid to backers only on failure</span>
+        </span>
         <input value={bonus} onChange={(e) => setBonus(e.target.value)} inputMode="decimal" />
       </label>
 
-      <label>
-        Deadline (minutes from now)
+      <label className="field">
+        <span>Deadline (minutes from now)</span>
         <input value={minutes} onChange={(e) => setMinutes(e.target.value)} inputMode="numeric" />
       </label>
 
